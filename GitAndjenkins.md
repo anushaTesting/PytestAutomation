@@ -452,6 +452,23 @@ Unpacking objects: 100% (10/10), done.
 ```
 Other person can now work your piece of code, in his system and can make changes commit, push etc.
 
+### Create branches and Share the files
+* I have created a new repository in Github for Pytest automation codes
+https://github.com/anushaTesting/PytestAutomation.git
+
+* In git bash, go to the folder where you have your Pytest codes
+* Type the command 'git init', to make that folder as local repository
+* Type the command 'git status' to check the status, all files are on untracked status now
+* Type the command 'git add .' to stage all files to commit
+* Type the command 'git commit -m "Comitting Pytest Codes"' , to commit to local repository
+* Link the remote repository location to push the codes to remote repository
+Type the command 'git remote add origin "https://github.com/anushaTesting/PytestAutomation.git"'
+and check the connection by the command 'git remote -v'
+You can see whether the link is established or not
+* Now to push the code to remote repository type the command 'git push origin master'
+* Once this is finished,go to GitHub and check if the local repository code is pushed. You can share the code to others with the link "https://github.com/anushaTesting/PytestAutomation.git"
+
+
 ## Jenkins Install and Setup
 ### Jenkins Installation
 1. Install and setup JDk in your system. I have JDK 1.8 installed in my sytem.If not download, install and setup the environment variables.
@@ -489,8 +506,149 @@ To configure python path
 Python_home , C:\Python37;C:\Python37\Scripts (the two paths for python_home)
 Python_Scripts, C:\Python37\Scripts
 
+Note : To restart Jenkins run this command.
+```powershell
+java -jar "jenkins.war" --httpPort=8086
+```
 ### Setup Allure Reporting on Jenkins
+Allure is an open-source framework designed to create interactive and comprehensive test report by Yandex QA Team. Each time when we run automation tests, we will have test results  to view details about no. of tests passed, failed and failure details etc. And few reports also include test failure screenshots.
 
+* Install Allure plugin in Jenkins
+Open Jenkins -> Manage Jenkins -> Manage Plugins -> Select Available Plugins -> Search for allure -> Install without restart
+Allure plugin is installed in Jenkins.
 
+* Download allure command line tool
+Google search and you will get this site 'https://github.com/etki/allure-cli'. In that go to the page 
+https://github.com/baev/allure-cli-depricated/releases/tag/allure-cli-2.4
+ and download latest allure zip file. once downloaded unzip the file.
+
+ * Configure Allure path in Jenkins
+ Click on Manage Jenkins -> Global Tool Configuration -> Allure
+ Give a name say Allure_Home, and give the path of Allure bin in your system 'C:\allure-cli\bin'
+
+ To check if everything is installed correctly on Jenkins go to NewItem -> Enter any name(Say Sample job) -> FreeStyle Project and click on enter
+ On this page, under Source Management Git should be present and under Post-build actions Allure report should present.
+
+ Allure plugin will help to upload allure report on the jenkins. Allure report is in XML report. We need a command line tool to convert XML to HTML and upload it to Jenkins.
+
+ ## Create Jobs on Jenkins
+ 1. Step 1 - Create job in jenkins and fetch data from Git
+ * Go to Jenkins . Click on New Item and create a job. Give any name for the job and select Freestyle project and click on enter.
+ * Under Source Management, select Git and give your Git repository URL 'https://github.com/anushaTesting/PytestAutomation.git'
+ * Apply and save
+ * You can see a job is created in Jenkins
+ * Now click on Build Now to create a build
+ * Once the build is created, click on the build
+ * You can see several options to see the build details .
+ Status, Changes, Console output etc.
+ * In console ouput you can see if the code is fetched successfuly from Git.
+
+2. Step 2 - Set Enviroment Variable and Run the batch file
+We need to set up environment variable in the job we have created as per the job needs. 
+Inside the job created(That is in the project) -> click on configure -> Build -> Select Execute Windows Batch Command and enter the environment variable here. If you are going to work with python set the variable as 
+```powershell
+Set path=%Python_Home%;%Path%
+```
+Add environment variable before the path variable. Enviroment variable we have already configured under Manage Jenkins -> Configure System -> Environment Variables
+The final environment variable has python path and the remaining path
+
+### Execute Jenkins with Pytest
+We have explained in previous section, but the follow the steps once more
+1. I have created a folder in my system, where my Pytest codes are present
+2. I have pushed those code to GitHub repository
+3. On Jenkins I have set up a new Job (new project)
+4. On jenkins project configure -> source management -> give github repository location.
+5. On jenkins project configure -> build -> select execute windows batch command -> set up the environment variables of python
+6. On configure -> build -> select execute windows batch command -> give the pytest command to run(as like you are doing with pytest). Say to execute my pytest test cases marked UI, give  as pytest -m UI.
+Apply and save
+7. Now click on Build Now to create the build
+8. You can see your test cases running in Jenkins as like in VisualStudio/Pycharm(any editor).
+9. Click on console output to see the details
+An example is pasted here:
+```powershell
+Started by user Anusha
+Running as SYSTEM
+Building in workspace C:\Users\anusha.narayan\.jenkins\workspace\PyTest-Git-Job
+No credentials specified
+ > C:/Program Files/Git/bin/git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:/Program Files/Git/bin/git.exe config remote.origin.url https://github.com/anushaTesting/PytestAutomation.git # timeout=10
+Fetching upstream changes from https://github.com/anushaTesting/PytestAutomation.git
+ > C:/Program Files/Git/bin/git.exe --version # timeout=10
+ > C:/Program Files/Git/bin/git.exe fetch --tags --force --progress https://github.com/anushaTesting/PytestAutomation.git +refs/heads/*:refs/remotes/origin/*
+ > C:/Program Files/Git/bin/git.exe rev-parse "refs/remotes/origin/master^{commit}" # timeout=10
+ > C:/Program Files/Git/bin/git.exe rev-parse "refs/remotes/origin/origin/master^{commit}" # timeout=10
+Checking out Revision d847702f1b119e8fcadd066fee7b42e2665d73ba (refs/remotes/origin/master)
+ > C:/Program Files/Git/bin/git.exe config core.sparsecheckout # timeout=10
+ > C:/Program Files/Git/bin/git.exe checkout -f d847702f1b119e8fcadd066fee7b42e2665d73ba
+Commit message: "Comitting Pytest Codes"
+ > C:/Program Files/Git/bin/git.exe rev-list --no-walk d847702f1b119e8fcadd066fee7b42e2665d73ba # timeout=10
+[PyTest-Git-Job] $ cmd /c call C:\Users\ANUSHA~1.NAR\AppData\Local\Temp\jenkins5171726087267605730.bat
+
+C:\Users\anusha.narayan\.jenkins\workspace\PyTest-Git-Job>Set path=C:\Python37;C:\Python37\Scripts;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\MySQL\MySQL Utilities 1.6\;C:\Program Files\nodejs\;C:\Python37;C:\Python37\Scripts;C:\Users\anusha.narayan\Desktop\Python\src;C:\Program Files\Git\cmd;C:\Python37\Scripts 
+
+C:\Users\anusha.narayan\.jenkins\workspace\PyTest-Git-Job>pytest -m UI 
+============================= test session starts =============================
+platform win32 -- Python 3.7.4, pytest-5.0.1, py-1.8.0, pluggy-0.12.0
+rootdir: C:\Users\anusha.narayan\.jenkins\workspace\PyTest-Git-Job, inifile: pytest.ini
+plugins: html-1.21.1, metadata-1.8.0
+collected 9 items / 6 deselected / 3 selected
+
+FixtureExamples\OnlineMarkets\Amazon\test_amazon.py .                    [ 33%]
+FixtureExamples\OnlineMarkets\FlipCart\test_flipcart.py .                [ 66%]
+FixtureExamples\OnlineMarkets\Myntra\test_myntra.py .                    [100%]
+
+============================== warnings summary ===============================
+c:\python37\lib\site-packages\_pytest\mark\structures.py:332
+  c:\python37\lib\site-packages\_pytest\mark\structures.py:332: PytestUnknownMarkWarning: Unknown pytest.mark.UI - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/latest/mark.html
+    PytestUnknownMarkWarning,
+
+c:\python37\lib\site-packages\_pytest\mark\structures.py:332
+  c:\python37\lib\site-packages\_pytest\mark\structures.py:332: PytestUnknownMarkWarning: Unknown pytest.mark.flipkart - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/latest/mark.html
+    PytestUnknownMarkWarning,
+
+c:\python37\lib\site-packages\_pytest\mark\structures.py:332
+  c:\python37\lib\site-packages\_pytest\mark\structures.py:332: PytestUnknownMarkWarning: Unknown pytest.mark.onlineshopping - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/latest/mark.html
+    PytestUnknownMarkWarning,
+
+c:\python37\lib\site-packages\_pytest\mark\structures.py:332
+  c:\python37\lib\site-packages\_pytest\mark\structures.py:332: PytestUnknownMarkWarning: Unknown pytest.mark.engine - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/latest/mark.html
+    PytestUnknownMarkWarning,
+
+c:\python37\lib\site-packages\_pytest\mark\structures.py:332
+  c:\python37\lib\site-packages\_pytest\mark\structures.py:332: PytestUnknownMarkWarning: Unknown pytest.mark.entertainment - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/latest/mark.html
+    PytestUnknownMarkWarning,
+
+-- Docs: https://docs.pytest.org/en/latest/warnings.html
+============= 3 passed, 6 deselected, 5 warnings in 9.53 seconds ==============
+
+C:\Users\anusha.narayan\.jenkins\workspace\PyTest-Git-Job>exit 0 
+Finished: SUCCESS
+```
+
+### Generate Allure report and Upload to Jenkins
+On Pytest to install allure reporting type as 
+```powershell
+pip install allure-pytest
+```
+That will install allure-pytest and allure-python-commons packages to produce report data compatible with Allure 2.
+
+To enable Allure listener to collect results during the test execution simply add --alluredir option and provide path to the folder where results should be stored. E.g.:
+```powershell
+py.test --alluredir=%allure_result_folder% ./tests
+```
+or 
+```powershell
+$ pytest --alluredir=/tmp/my_allure_results
+```
+
+To see the actual report after your tests have finished, you need to use Allure commandline utility to generate report from the results.
+
+```powershell
+$ allure serve /tmp/my_allure_results
+```
+Refer more details on 
+
+https://docs.qameta.io/allure/#_pytest
 
 
